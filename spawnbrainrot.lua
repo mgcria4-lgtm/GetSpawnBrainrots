@@ -1,6 +1,6 @@
 local CoreGui = game:GetService("CoreGui")
 if CoreGui:FindFirstChild("MG_SecretForce") then
-	CoreGui.MG_SecretForce:Destroy()
+    CoreGui.MG_SecretForce:Destroy()
 end
 
 local gui = Instance.new("ScreenGui", CoreGui)
@@ -55,94 +55,77 @@ Instance.new("UICorner", btnDisable).CornerRadius = UDim.new(0, 6)
 local rodando = true
 
 btnDisable.MouseButton1Click:Connect(function()
-	rodando = false
-	gui:Destroy()
+    rodando = false
+    gui:Destroy()
 end)
 
 local function filtrarEventos(lista)
-	local proibidos = {"Teleport","Reset","Kick","Leave","Server","Base"}
-	local filtrados = {}
+    local proibidos = {"teleport","reset","kick","leave","server","base"}
+    local filtrados = {}
 
-	for _, evt in pairs(lista) do
-		local nome = evt.Name:lower()
-		local bloqueado = false
-		for _, p in pairs(proibidos) do
-			if string.find(nome, p:lower()) then
-				bloqueado = true
-				break
-			end
-		end
-		if not bloqueado then
-			table.insert(filtrados, evt)
-		end
-	end
-	return filtrados
+    for _, evt in pairs(lista) do
+        local nome = evt.Name:lower()
+        local bloqueado = false
+        for _, p in pairs(proibidos) do
+            if string.find(nome, p) then
+                bloqueado = true
+                break
+            end
+        end
+        if not bloqueado then
+            table.insert(filtrados, evt)
+        end
+    end
+    return filtrados
 end
 
 local function getEventos()
-	local ReplicatedStorage = game:GetService("ReplicatedStorage")
-	local Players = game:GetService("Players")
-	local LocalPlayer = Players.LocalPlayer
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
 
-	local eventos = {}
+    local eventos = {}
 
-	for _, evt in pairs(ReplicatedStorage:GetDescendants()) do
-		if evt:IsA("RemoteEvent") then
-			table.insert(eventos, evt)
-		end
-	end
+    for _, evt in pairs(ReplicatedStorage:GetDescendants()) do
+        if evt:IsA("RemoteEvent") then
+            table.insert(eventos, evt)
+        end
+    end
 
-	-- Também procura em PlayerGui do LocalPlayer
-	if LocalPlayer and LocalPlayer:FindFirstChild("PlayerGui") then
-		for _, evt in pairs(LocalPlayer.PlayerGui:GetDescendants()) do
-			if evt:IsA("RemoteEvent") then
-				table.insert(eventos, evt)
-			end
-		end
-	end
+    if LocalPlayer and LocalPlayer:FindFirstChild("PlayerGui") then
+        for _, evt in pairs(LocalPlayer.PlayerGui:GetDescendants()) do
+            if evt:IsA("RemoteEvent") then
+                table.insert(eventos, evt)
+            end
+        end
+    end
 
-	return filtrarEventos(eventos)
+    return filtrarEventos(eventos)
 end
 
 local function spawnBrainrot(evt)
-	if not rodando then return end
-	pcall(function()
-		-- Tenta enviar os argumentos que mais aparentam forçar Secrets/Gods
-		evt:FireServer("Secret", 999, true)
-		evt:FireServer("God", 888, true)
-		evt:FireServer("SecretMulti", 777, true)
-		evt:FireServer({PetID = "SecretGod999", LuckBoost=999999, Force=true})
-	end)
-end
-
-local function detectarSpawn()
-	local Players = game:GetService("Players")
-	local LocalPlayer = Players.LocalPlayer
-
-	if not LocalPlayer then return end
-
-	-- Exemplo: escutar eventos visuais ou objetos no workspace (adaptar conforme o jogo)
-	workspace.ChildAdded:Connect(function(child)
-		if not rodando then return end
-		if child.Name == "SecretBrainrot" or child.Name:lower():find("secret") or child.Name:lower():find("god") then
-			status.Text = "🔥 Brainrot Secret/God spawnado! "..child.Name
-		end
-	end)
+    if not rodando then return end
+    pcall(function()
+        evt:FireServer("Secret", 999, true)
+    end)
 end
 
 btnSpawn.MouseButton1Click:Connect(function()
-	status.Text = "🚀 Tentando spawnar Secrets/Gods..."
+    if not rodando then return end
+    status.Text = "⏳ Tentando spawnar..."
 
-	local eventos = getEventos()
-	if #eventos == 0 then
-		status.Text = "❌ Nenhum evento válido encontrado!"
-		return
-	end
+    local eventos = getEventos()
+    if #eventos == 0 then
+        status.Text = "❌ Nenhum evento válido encontrado!"
+        return
+    end
 
-	for _, evt in pairs(eventos) do
-		spawnBrainrot(evt)
-	end
+    for i, evt in ipairs(eventos) do
+        if not rodando then break end
+        spawnBrainrot(evt)
+        status.Text = "⏳ Enviando para evento "..i.." de "..#eventos
+        task.wait(0.05) -- pausa pra não travar
+    end
+
+    status.Text = "✅ Pedidos enviados!"
 end)
-
-detectarSpawn()
-
