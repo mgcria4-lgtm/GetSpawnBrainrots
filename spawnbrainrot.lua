@@ -1,15 +1,15 @@
 local CoreGui = game:GetService("CoreGui")
-if CoreGui:FindFirstChild("MG_SecretForce") then
-    CoreGui.MG_SecretForce:Destroy()
+if CoreGui:FindFirstChild("MG_SecretForceSimple") then
+	CoreGui.MG_SecretForceSimple:Destroy()
 end
 
 local gui = Instance.new("ScreenGui", CoreGui)
-gui.Name = "MG_SecretForce"
+gui.Name = "MG_SecretForceSimple"
 gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 320, 0, 180)
-frame.Position = UDim2.new(0.35, 0, 0.3, 0)
+frame.Size = UDim2.new(0, 300, 0, 140)
+frame.Position = UDim2.new(0.4, 0, 0.4, 0)
 frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 frame.Active = true
 frame.Draggable = true
@@ -21,7 +21,7 @@ title.BackgroundTransparency = 1
 title.Font = Enum.Font.GothamBold
 title.TextSize = 18
 title.TextColor3 = Color3.new(1,1,1)
-title.Text = "🧠 MG Secret Force & Detector"
+title.Text = "Spawn Brainrot Secret"
 
 local status = Instance.new("TextLabel", frame)
 status.Size = UDim2.new(1, -20, 0, 25)
@@ -30,102 +30,29 @@ status.BackgroundTransparency = 1
 status.Font = Enum.Font.Gotham
 status.TextSize = 14
 status.TextColor3 = Color3.new(1,1,1)
-status.Text = "Status: Aguardando ação..."
+status.Text = "Clique para tentar spawnar"
 
 local btnSpawn = Instance.new("TextButton", frame)
-btnSpawn.Size = UDim2.new(0.8, 0, 0, 35)
+btnSpawn.Size = UDim2.new(0.8, 0, 0, 40)
 btnSpawn.Position = UDim2.new(0.1, 0, 0, 75)
-btnSpawn.Text = "Forçar Spawn Secret/God"
+btnSpawn.Text = "Spawnar Secret"
 btnSpawn.Font = Enum.Font.GothamBold
 btnSpawn.TextSize = 16
-btnSpawn.BackgroundColor3 = Color3.fromRGB(0, 160, 0)
+btnSpawn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
 btnSpawn.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", btnSpawn).CornerRadius = UDim.new(0, 6)
 
-local btnDisable = Instance.new("TextButton", frame)
-btnDisable.Size = UDim2.new(0.8, 0, 0, 30)
-btnDisable.Position = UDim2.new(0.1, 0, 0, 120)
-btnDisable.Text = "Desativar Script"
-btnDisable.Font = Enum.Font.GothamBold
-btnDisable.TextSize = 14
-btnDisable.BackgroundColor3 = Color3.fromRGB(160, 0, 0)
-btnDisable.TextColor3 = Color3.new(1,1,1)
-Instance.new("UICorner", btnDisable).CornerRadius = UDim.new(0, 6)
-
-local rodando = true
-
-btnDisable.MouseButton1Click:Connect(function()
-    rodando = false
-    gui:Destroy()
-end)
-
-local function filtrarEventos(lista)
-    local proibidos = {"teleport","reset","kick","leave","server","base"}
-    local filtrados = {}
-
-    for _, evt in pairs(lista) do
-        local nome = evt.Name:lower()
-        local bloqueado = false
-        for _, p in pairs(proibidos) do
-            if string.find(nome, p) then
-                bloqueado = true
-                break
-            end
-        end
-        if not bloqueado then
-            table.insert(filtrados, evt)
-        end
-    end
-    return filtrados
-end
-
-local function getEventos()
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    local Players = game:GetService("Players")
-    local LocalPlayer = Players.LocalPlayer
-
-    local eventos = {}
-
-    for _, evt in pairs(ReplicatedStorage:GetDescendants()) do
-        if evt:IsA("RemoteEvent") then
-            table.insert(eventos, evt)
-        end
-    end
-
-    if LocalPlayer and LocalPlayer:FindFirstChild("PlayerGui") then
-        for _, evt in pairs(LocalPlayer.PlayerGui:GetDescendants()) do
-            if evt:IsA("RemoteEvent") then
-                table.insert(eventos, evt)
-            end
-        end
-    end
-
-    return filtrarEventos(eventos)
-end
-
-local function spawnBrainrot(evt)
-    if not rodando then return end
-    pcall(function()
-        evt:FireServer("Secret", 999, true)
-    end)
-end
-
 btnSpawn.MouseButton1Click:Connect(function()
-    if not rodando then return end
-    status.Text = "⏳ Tentando spawnar..."
+	status.Text = "Tentando enviar spawn..."
 
-    local eventos = getEventos()
-    if #eventos == 0 then
-        status.Text = "❌ Nenhum evento válido encontrado!"
-        return
-    end
-
-    for i, evt in ipairs(eventos) do
-        if not rodando then break end
-        spawnBrainrot(evt)
-        status.Text = "⏳ Enviando para evento "..i.." de "..#eventos
-        task.wait(0.05) -- pausa pra não travar
-    end
-
-    status.Text = "✅ Pedidos enviados!"
+	local ReplicatedStorage = game:GetService("ReplicatedStorage")
+	local evt = ReplicatedStorage:FindFirstChild("Hatch")
+	if evt and evt:IsA("RemoteEvent") then
+		pcall(function()
+			evt:FireServer("Secret", 999, true)
+			status.Text = "Pedido enviado para evento Hatch!"
+		end)
+	else
+		status.Text = "Evento Hatch não encontrado."
+	end
 end)
