@@ -1,0 +1,2 @@
+# GetSpawnBrainrots
+brainrotsspawn
